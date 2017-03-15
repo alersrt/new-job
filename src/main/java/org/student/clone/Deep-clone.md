@@ -2,7 +2,7 @@
 
 Как-то так:
 
-```java
+```
 ComplexObject obj = ...
 ComplexObject copy = CopyUtils.deepCopy(obj);
 ```
