@@ -82,11 +82,27 @@ public class Downloader {
 	/**
 	 * The main method
 	 * @param args the array of arguments
-	 * @throws ParseException
-	 * @throws IOException
 	 */
 	public static void main(String[] args) throws ParseException, IOException {
 		args = new String[]{"--help"};
-		//TODO: make options handler
+		 // The options handler from {@code org.apache.commons.cli} library
+		Options options = new Options();
+		// Adding options in options list
+		options.addOption("n", true, "quantity of theads which download the files");
+		options.addOption("l", true, "common limit of download speed");
+		options.addOption("f", true, "path to the file which contains links");
+		options.addOption("o", true, "name of dir in which the files will be donwloaded");
+		options.addOption(Option.builder("h").longOpt("help").build());
+		// Formatter for help output
+		HelpFormatter formatter = new HelpFormatter();
+		formatter.printHelp( "downloader", options );
+		CommandLineParser parser = new DefaultParser();
+		// Values parser
+		CommandLine cmd = parser.parse(options, args);
+		// Set params from cli options
+		threadsCount = Integer.parseInt(cmd.getOptionValue("n"));
+		filePath = cmd.getOptionValue("f");
+
+		//TODO: The function of downloading with many threads need will have realized
 	}
 }
