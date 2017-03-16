@@ -2,7 +2,8 @@ package org.student.downloader;
 
 import org.apache.commons.cli.*;
 
-import java.util.HashMap;
+import java.io.IOException;
+import java.net.URL;
 import java.util.Map;
 
 /**
@@ -14,7 +15,7 @@ public class Downloader {
 	private static int speedLimit;
 	private static int threadsCount;
 
-	public static void main(String[] args) throws ParseException {
+	public static void main(String[] args) throws ParseException, IOException {
 		args = new String[]{"--help"};
 
 		Options options = new Options();
@@ -35,11 +36,7 @@ public class Downloader {
 		setSpeedLimit(Integer.parseInt(cmd.getOptionValue("l")));
 		setThreadsCount(Integer.parseInt(cmd.getOptionValue("n")));
 
-		Map<String, String> urlList = new HashMap<String, String>();
-	}
-
-	public static void downloadFile() {
-
+		Map<URL, String> urlList = Utility.getURLsList(cmd.getOptionValue("f"));
 	}
 
 	public static String getFilePath() {
