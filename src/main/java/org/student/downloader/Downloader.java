@@ -2,72 +2,91 @@ package org.student.downloader;
 
 import org.apache.commons.cli.*;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Map;
+import java.nio.file.FileSystems;
 
-/**
- * Created by jogg on 16.03.17.
- */
 public class Downloader {
-	private static String filePath;
-	private static String dirName;
-	private static int speedLimit;
 	private static int threadsCount;
+	private static String filePath;
 
+	/**
+	 * The class provide opportunity for create single downloading thread
+	 */
+	private class DownloadThread implements Runnable {
+		private String fileURL;
+		private String fileName;
+		private String saveDir;
+		private int speedLimit;
+
+		private static final long TIME_SLOT = 1000;
+
+		/**
+		 * The constructor create one exemplary of thread
+		 * @param fileURL the url for downloading
+		 * @param fileName the name under which will have been saved the file
+		 * @param saveDir the name of downloads dir
+		 * @param speedLimit the speed limit
+		 */
+		public DownloadThread(String fileURL, String fileName, String saveDir, int speedLimit) {
+			this.fileURL = fileURL;
+			this.fileName = fileName;
+			this.saveDir = saveDir;
+			this.speedLimit = speedLimit;
+		}
+
+		/**
+		 * The body of thread.
+		 * Speed limit realized with Thread.sleep(TIME_SLOT - (nowTime - startTime))
+		 * where startTime is time of downloading starting and nowTime is time at moment
+		 * sleeping of current thread
+		 */
+		@Override
+		public void run() {
+			try {
+				URL url = new URL(fileURL);
+				HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
+				int responseCode = httpConn.getResponseCode();
+				String saveFilePath = saveDir + FileSystems.getDefault().getSeparator() + fileName;
+
+				if (responseCode == HttpURLConnection.HTTP_OK) {
+					InputStream inputStream = httpConn.getInputStream();
+					FileOutputStream outputStream = new FileOutputStream(saveFilePath);
+
+					long timeSleep = 0;
+					int bytesRead = -1;
+					byte[] buffer = new byte[speedLimit];
+					while ((bytesRead = inputStream.read(buffer)) != -1) {
+						timeSleep = System.currentTimeMillis();
+						outputStream.write(buffer, 0, bytesRead);
+						Thread.sleep(TIME_SLOT - (System.currentTimeMillis() - timeSleep));
+					}
+
+					outputStream.close();
+					inputStream.close();
+
+					System.out.println("File downloaded");
+				} else {
+					System.out.println("No file to download. Server replied HTTP code: " + responseCode);
+				}
+				httpConn.disconnect();
+			} catch (IOException | InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * The main method
+	 * @param args the array of arguments
+	 * @throws ParseException
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws ParseException, IOException {
 		args = new String[]{"--help"};
-
-		Options options = new Options();
-		options.addOption("n", true, "quantity of theads which download the files");
-		options.addOption("l", true, "common limit of download speed");
-		options.addOption("f", true, "path to the file which contains links");
-		options.addOption("o", true, "name of dir in which the files will be donwloaded");
-		options.addOption(Option.builder("h").longOpt("help").build());
-
-		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp( "downloader", options );
-
-		CommandLineParser parser = new DefaultParser();
-		CommandLine cmd = parser.parse(options, args);
-
-		setFilePath(cmd.getOptionValue("f"));
-		setDirName(cmd.getOptionValue("o"));
-		setSpeedLimit(Integer.parseInt(cmd.getOptionValue("l")));
-		setThreadsCount(Integer.parseInt(cmd.getOptionValue("n")));
-
-		Map<URL, String> urlList = Utility.getURLsList(cmd.getOptionValue("f"));
-	}
-
-	public static String getFilePath() {
-		return filePath;
-	}
-
-	public static void setFilePath(String filePath) {
-		Downloader.filePath = filePath;
-	}
-
-	public static String getDirName() {
-		return dirName;
-	}
-
-	public static void setDirName(String dirName) {
-		Downloader.dirName = dirName;
-	}
-
-	public static int getSpeedLimit() {
-		return speedLimit;
-	}
-
-	public static void setSpeedLimit(int speedLimit) {
-		Downloader.speedLimit = speedLimit;
-	}
-
-	public static int getThreadsCount() {
-		return threadsCount;
-	}
-
-	public static void setThreadsCount(int threadsCount) {
-		Downloader.threadsCount = threadsCount;
+		//TODO: make options handler
 	}
 }
