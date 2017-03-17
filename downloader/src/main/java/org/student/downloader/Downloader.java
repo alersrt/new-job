@@ -121,6 +121,9 @@ public class Downloader {
 						new DownloadThread(k.toString(), v, saveDir, speedLimit)
 				));
 
-		System.out.println(String.format("All bytes: %s. All time: %s ms", bytesQuantity, System.currentTimeMillis() - timeStart));
+		System.out.println(String.format("All bytes: %s. All time: %s ms",
+				bytesQuantity,
+				System.currentTimeMillis() - timeStart)
+		);
 	}
 }
