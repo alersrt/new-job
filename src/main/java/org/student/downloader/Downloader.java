@@ -94,7 +94,7 @@ public class Downloader {
 	 * @param args the array of arguments
 	 */
 	public static void main(String[] args) throws ParseException, IOException {
-		args = new String[]{"--help"};
+		//args = new String[]{"--help"};
 		 // The options handler from {@code org.apache.commons.cli} library
 		Options options = new Options();
 		// Adding options in options list
