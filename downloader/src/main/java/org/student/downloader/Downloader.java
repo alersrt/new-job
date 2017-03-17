@@ -1,6 +1,6 @@
 package org.student.downloader;
 
-import com.sun.javafx.binding.StringFormatter;
+import com.google.common.util.concurrent.RateLimiter;
 import org.apache.commons.cli.*;
 
 import java.io.FileOutputStream;
@@ -11,10 +11,11 @@ import java.net.URL;
 import java.nio.file.FileSystems;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Downloader {
 	private static volatile long bytesQuantity = 0;
-	private static long timeStart = System.currentTimeMillis();
+	private static volatile long timeStart = System.currentTimeMillis();
 
 	/**
 	 * The class provide opportunity for create single downloading thread
@@ -25,7 +26,7 @@ public class Downloader {
 		private String saveDir;
 		private long speedLimit;
 
-		private static final long TIME_SLOT = 1000;
+		private static final int MAX_BUFFER_SIZE = 4096;
 
 		/**
 		 * The constructor create one exemplary of thread
@@ -62,25 +63,25 @@ public class Downloader {
 					InputStream inputStream = httpConn.getInputStream();
 					FileOutputStream outputStream = new FileOutputStream(saveFilePath);
 
-					long timeSleep = 0;
 					int bytesRead = -1;
-					byte[] buffer = new byte[(int) speedLimit];
+					byte[] buffer = new byte[MAX_BUFFER_SIZE];
+					// Using prepared function from {@code com.google.common}
+					RateLimiter limiter = RateLimiter.create(speedLimit);
 					while ((bytesRead = inputStream.read(buffer)) != -1) {
-						timeSleep = System.currentTimeMillis();
 						outputStream.write(buffer, 0, bytesRead);
-						Thread.sleep(TIME_SLOT - (System.currentTimeMillis() - timeSleep));
-						bytesQuantity++;
+						limiter.acquire(bytesRead);
+						bytesQuantity += bytesRead;
 					}
 
 					outputStream.close();
 					inputStream.close();
 
-					System.out.println("File downloaded");
+					System.out.println(String.format("%s downloading is done", fileName));
 				} else {
 					System.out.println("No file to download. Server replied HTTP code: " + responseCode);
 				}
 				httpConn.disconnect();
-			} catch (IOException | InterruptedException e) {
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
@@ -92,7 +93,7 @@ public class Downloader {
 	 * @param args the array of arguments
 	 */
 	public static void main(String[] args) throws ParseException, IOException {
-		//args = new String[]{"--help"};
+		//args = new String[]{"-f=/home/jogg/123.txt", "-l=2m", "-n=4", "-o=/home/jogg/123/"};
 		// The options handler from {@code org.apache.commons.cli} library
 		Options options = new Options();
 		// Adding options in options list
@@ -100,10 +101,6 @@ public class Downloader {
 		options.addOption("l", true, "common limit of download speed");
 		options.addOption("f", true, "path to the file which contains links");
 		options.addOption("o", true, "name of dir in which the files will be donwloaded");
-		options.addOption(Option.builder("h").longOpt("help").build());
-		// Formatter for help output
-		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp( "downloader", options );
 		CommandLineParser parser = new DefaultParser();
 		// Values parser
 		CommandLine cmd = parser.parse(options, args);
@@ -120,10 +117,17 @@ public class Downloader {
 				.forEach((k, v) -> executorService.submit(
 						new DownloadThread(k.toString(), v, saveDir, speedLimit)
 				));
+		executorService.shutdown();
+
+		try {
+			executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+		} catch (InterruptedException e) {
+		}
 
 		System.out.println(String.format("All bytes: %s. All time: %s ms",
 				bytesQuantity,
 				System.currentTimeMillis() - timeStart)
 		);
+
 	}
 }

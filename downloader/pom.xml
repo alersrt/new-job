@@ -68,12 +68,18 @@
             <artifactId>commons-cli</artifactId>
             <version>${commons-cli.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
     </dependencies>
 
     <properties>
         <java.version>1.8</java.version>
         <commons-cli.version>1.4</commons-cli.version>
         <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
+        <guava.version>21.0</guava.version>
     </properties>
 
 
