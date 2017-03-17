@@ -17,8 +17,6 @@ import java.util.stream.Collectors;
  * @author jogg
  */
 
-// TODO: Need will have realized functions of count time and bytes
-
 public class Utility {
 	/**
 	 * The method parse the human readable format of bytes quantity and
