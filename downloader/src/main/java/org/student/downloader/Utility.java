@@ -28,7 +28,7 @@ public class Utility {
 	public static long getLongNumber(String numberString) {
 		long returnValue = -1;
 
-		Pattern patt = Pattern.compile("([\\d.]+)([Gmk])", Pattern.CASE_INSENSITIVE);
+		Pattern patt = Pattern.compile("([\\d.]+)([GMK])", Pattern.CASE_INSENSITIVE);
 		Matcher matcher = patt.matcher(numberString);
 
 		Map<String, Integer> powerMap = new HashMap<>();
