@@ -46,10 +46,7 @@ public class Downloader {
 		}
 
 		/**
-		 * The body of thread. Speed limit realized with helping
-		 * {@code Thread.sleep(TIME_SLOT - (nowTime - startTime))}
-		 * where startTime is time of downloading starting and nowTime is
-		 * time at moment sleeping of current thread
+		 * The body of thread.
 		 */
 		@Override
 		public void run() {
