@@ -33,8 +33,8 @@ public class Utility {
 
 		Map<String, Integer> powerMap = new HashMap<>();
 		powerMap.put("G", 3);
-		powerMap.put("m", 2);
-		powerMap.put("k", 1);
+		powerMap.put("M", 2);
+		powerMap.put("K", 1);
 
 		if (matcher.find()) {
 			String number = matcher.group(1);
