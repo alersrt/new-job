@@ -1,5 +1,6 @@
 package org.student.downloader;
 
+import com.sun.javafx.binding.StringFormatter;
 import org.apache.commons.cli.*;
 
 import java.io.FileOutputStream;
@@ -12,6 +13,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Downloader {
+	private static volatile long bytesQuantity = 0;
+	private static long timeStart = System.currentTimeMillis();
+
 	/**
 	 * The class provide opportunity for create single downloading thread
 	 */
@@ -19,7 +23,7 @@ public class Downloader {
 		private String fileURL;
 		private String fileName;
 		private String saveDir;
-		private int speedLimit;
+		private long speedLimit;
 
 		private static final long TIME_SLOT = 1000;
 
@@ -33,7 +37,7 @@ public class Downloader {
 		DownloadThread(String fileURL,
 					   String fileName,
 					   String saveDir,
-					   int speedLimit) {
+					   long speedLimit) {
 			this.fileURL = fileURL;
 			this.fileName = fileName;
 			this.saveDir = saveDir;
@@ -41,8 +45,7 @@ public class Downloader {
 		}
 
 		/**
-		 * The body of thread.
-		 * Speed limit realized with
+		 * The body of thread. Speed limit realized with helping
 		 * {@code Thread.sleep(TIME_SLOT - (nowTime - startTime))}
 		 * where startTime is time of downloading starting and nowTime is
 		 * time at moment sleeping of current thread
@@ -61,11 +64,12 @@ public class Downloader {
 
 					long timeSleep = 0;
 					int bytesRead = -1;
-					byte[] buffer = new byte[speedLimit];
+					byte[] buffer = new byte[(int) speedLimit];
 					while ((bytesRead = inputStream.read(buffer)) != -1) {
 						timeSleep = System.currentTimeMillis();
 						outputStream.write(buffer, 0, bytesRead);
 						Thread.sleep(TIME_SLOT - (System.currentTimeMillis() - timeSleep));
+						bytesQuantity++;
 					}
 
 					outputStream.close();
@@ -84,11 +88,12 @@ public class Downloader {
 
 	/**
 	 * The main method
+	 *
 	 * @param args the array of arguments
 	 */
 	public static void main(String[] args) throws ParseException, IOException {
 		//args = new String[]{"--help"};
-		 // The options handler from {@code org.apache.commons.cli} library
+		// The options handler from {@code org.apache.commons.cli} library
 		Options options = new Options();
 		// Adding options in options list
 		options.addOption("n", true, "quantity of theads which download the files");
@@ -107,7 +112,7 @@ public class Downloader {
 		int threadsCount = Integer.parseInt(cmd.getOptionValue("n"));
 		String filePath = cmd.getOptionValue("f");
 		String saveDir = cmd.getOptionValue("o");
-		int speedLimit = Integer.parseInt(cmd.getOptionValue("l"));
+		long speedLimit = Utility.getLongNumber(cmd.getOptionValue("l"));
 
 		// Execution threads
 		ExecutorService executorService = Executors.newFixedThreadPool(threadsCount);
@@ -115,5 +120,7 @@ public class Downloader {
 				.forEach((k, v) -> executorService.submit(
 						new DownloadThread(k.toString(), v, saveDir, speedLimit)
 				));
+
+		System.out.println(String.format("All bytes: %s. All time: %s ms", bytesQuantity, System.currentTimeMillis() - timeStart));
 	}
 }
