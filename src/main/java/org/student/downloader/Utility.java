@@ -15,14 +15,14 @@ import java.util.stream.Collectors;
 public class Utility {
 	/**
 	 * Return URL list from file
-	 * @param fileName name of file which contains URL list
+	 * @param filePath name of file which contains URL list
 	 * @return {@code Map<URL,String>} which contains the URL of file which
 	 * need download and the name under which the file will have been saved
 	 * @throws java.io.IOException
 	 */
-	public static Map<URL, String> getURLsList(String fileName) throws IOException {
+	public static Map<URL, String> getURLsList(String filePath) throws IOException {
 		return Files
-				.lines(Paths.get(fileName))
+				.lines(Paths.get(filePath))
 				.collect(Collectors
 						.toMap(s -> {
 							URL url = null;

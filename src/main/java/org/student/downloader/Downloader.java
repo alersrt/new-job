@@ -8,15 +8,21 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.FileSystems;
+import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.IntStream;
 
 public class Downloader {
 	private static int threadsCount;
 	private static String filePath;
+	private static String saveDir;
+	private static int speedLimit;
 
 	/**
 	 * The class provide opportunity for create single downloading thread
 	 */
-	private class DownloadThread implements Runnable {
+	private static class DownloadThread implements Runnable {
 		private String fileURL;
 		private String fileName;
 		private String saveDir;
@@ -31,7 +37,10 @@ public class Downloader {
 		 * @param saveDir the name of downloads dir
 		 * @param speedLimit the speed limit
 		 */
-		public DownloadThread(String fileURL, String fileName, String saveDir, int speedLimit) {
+		public DownloadThread(String fileURL,
+							  String fileName,
+							  String saveDir,
+							  int speedLimit) {
 			this.fileURL = fileURL;
 			this.fileName = fileName;
 			this.saveDir = saveDir;
@@ -40,9 +49,10 @@ public class Downloader {
 
 		/**
 		 * The body of thread.
-		 * Speed limit realized with Thread.sleep(TIME_SLOT - (nowTime - startTime))
-		 * where startTime is time of downloading starting and nowTime is time at moment
-		 * sleeping of current thread
+		 * Speed limit realized with
+		 * {@code Thread.sleep(TIME_SLOT - (nowTime - startTime))}
+		 * where startTime is time of downloading starting and nowTime is
+		 * time at moment sleeping of current thread
 		 */
 		@Override
 		public void run() {
@@ -99,10 +109,18 @@ public class Downloader {
 		CommandLineParser parser = new DefaultParser();
 		// Values parser
 		CommandLine cmd = parser.parse(options, args);
+
 		// Set params from cli options
 		threadsCount = Integer.parseInt(cmd.getOptionValue("n"));
 		filePath = cmd.getOptionValue("f");
+		saveDir = cmd.getOptionValue("o");
+		speedLimit = Integer.parseInt(cmd.getOptionValue("l"));
 
-		//TODO: The function of downloading with many threads need will have realized
+		// Execution threads
+		ExecutorService executorService = Executors.newFixedThreadPool(threadsCount);
+		Utility.getURLsList(filePath)
+				.forEach((k, v) -> executorService.submit(
+						new DownloadThread(k.toString(), v, saveDir, speedLimit)
+				));
 	}
 }
