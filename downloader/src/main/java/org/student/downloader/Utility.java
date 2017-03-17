@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
  * @author jogg
  */
 
+// TODO: Need will have realized parser of speel limit and functions of count time and bytes
+
 public class Utility {
 	/**
 	 * Return URL list from file
