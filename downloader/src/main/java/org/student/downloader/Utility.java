@@ -1,4 +1,4 @@
-package com.student.downloader;
+package org.student.downloader;
 
 import java.io.*;
 import java.net.MalformedURLException;

@@ -1,4 +1,4 @@
-package com.student.downloader;
+package org.student.downloader;
 
 import org.apache.commons.cli.*;
 
@@ -12,11 +12,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Downloader {
-	private static int threadsCount;
-	private static String filePath;
-	private static String saveDir;
-	private static int speedLimit;
-
 	/**
 	 * The class provide opportunity for create single downloading thread
 	 */
@@ -35,10 +30,10 @@ public class Downloader {
 		 * @param saveDir the name of downloads dir
 		 * @param speedLimit the speed limit
 		 */
-		public DownloadThread(String fileURL,
-							  String fileName,
-							  String saveDir,
-							  int speedLimit) {
+		DownloadThread(String fileURL,
+					   String fileName,
+					   String saveDir,
+					   int speedLimit) {
 			this.fileURL = fileURL;
 			this.fileName = fileName;
 			this.saveDir = saveDir;
@@ -109,10 +104,10 @@ public class Downloader {
 		CommandLine cmd = parser.parse(options, args);
 
 		// Set params from cli options
-		threadsCount = Integer.parseInt(cmd.getOptionValue("n"));
-		filePath = cmd.getOptionValue("f");
-		saveDir = cmd.getOptionValue("o");
-		speedLimit = Integer.parseInt(cmd.getOptionValue("l"));
+		int threadsCount = Integer.parseInt(cmd.getOptionValue("n"));
+		String filePath = cmd.getOptionValue("f");
+		String saveDir = cmd.getOptionValue("o");
+		int speedLimit = Integer.parseInt(cmd.getOptionValue("l"));
 
 		// Execution threads
 		ExecutorService executorService = Executors.newFixedThreadPool(threadsCount);
