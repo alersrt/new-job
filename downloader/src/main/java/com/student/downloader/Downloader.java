@@ -1,4 +1,4 @@
-package org.student.downloader;
+package com.student.downloader;
 
 import org.apache.commons.cli.*;
 
@@ -8,10 +8,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.FileSystems;
-import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.IntStream;
 
 public class Downloader {
 	private static int threadsCount;
