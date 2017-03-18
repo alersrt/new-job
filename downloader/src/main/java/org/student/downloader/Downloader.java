@@ -45,8 +45,8 @@ public class Downloader {
 		}
 
 		/**
-		 * The body of thread.
-		 */
+		 * The body of thread which returned {@code Long} value
+ 		 */
 		@Override
 		public Long call() throws Exception {
 			long bytesQuantity = 0;
@@ -91,8 +91,7 @@ public class Downloader {
 	 * @param args the array of arguments
 	 */
 	public static void main(String[] args) throws ParseException, IOException {
-		args = new String[]{"-f=/home/jogg/links", "-l=2m", "-n=4", "-o=/home/jogg/123/"};
-		// The options handler from {@code org.apache.commons.cli} library
+		// Options handler from {@code org.apache.commons.cli} library
 		Options options = new Options();
 		// Adding options in options list
 		options.addOption("n", true, "quantity of theads which download the files");
@@ -120,11 +119,15 @@ public class Downloader {
 				));
 		executorService.shutdown();
 
+		// It is waiting until all threads do not have ended their works
 		try {
 			executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 		} catch (InterruptedException ignored) {
 		}
 
+		/* Printing statistics info. Bytes quantity counts with help of
+		* stream. First it mapping {@code Future} result to Long and
+		* summ all results */
 		System.out.println(String.format("All bytes: %s. All time: %s ms",
 				futureList.stream().mapToLong(p -> {
 					long t = 0;
