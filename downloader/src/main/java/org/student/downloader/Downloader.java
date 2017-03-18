@@ -9,19 +9,18 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.FileSystems;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 
 public class Downloader {
-	private static volatile long bytesQuantity = 0;
 	private static volatile long timeStart = System.currentTimeMillis();
 
 	/**
 	 * The class provide opportunity for create single downloading thread
 	 */
-	private static class DownloadThread implements Runnable {
-		private String fileURL;
+	private static class DownloadThread implements Callable<Long> {
+		URL fileURL;
 		private String fileName;
 		private String saveDir;
 		private long speedLimit;
@@ -35,7 +34,7 @@ public class Downloader {
 		 * @param saveDir the name of downloads dir
 		 * @param speedLimit the speed limit
 		 */
-		DownloadThread(String fileURL,
+		DownloadThread(URL fileURL,
 					   String fileName,
 					   String saveDir,
 					   long speedLimit) {
@@ -49,10 +48,10 @@ public class Downloader {
 		 * The body of thread.
 		 */
 		@Override
-		public void run() {
+		public Long call() throws Exception {
+			long bytesQuantity = 0;
 			try {
-				URL url = new URL(fileURL);
-				HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
+				HttpURLConnection httpConn = (HttpURLConnection) fileURL.openConnection();
 				int responseCode = httpConn.getResponseCode();
 				String saveFilePath = saveDir + FileSystems.getDefault().getSeparator() + fileName;
 
@@ -81,6 +80,8 @@ public class Downloader {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+
+			return bytesQuantity;
 		}
 	}
 
@@ -90,7 +91,7 @@ public class Downloader {
 	 * @param args the array of arguments
 	 */
 	public static void main(String[] args) throws ParseException, IOException {
-		//args = new String[]{"-f=/home/jogg/123.txt", "-l=2m", "-n=4", "-o=/home/jogg/123/"};
+		args = new String[]{"-f=/home/jogg/links", "-l=2m", "-n=4", "-o=/home/jogg/123/"};
 		// The options handler from {@code org.apache.commons.cli} library
 		Options options = new Options();
 		// Adding options in options list
@@ -109,22 +110,32 @@ public class Downloader {
 		long speedLimit = Utility.getLongNumber(cmd.getOptionValue("l"));
 
 		// Execution threads
+		List<Future<Long>> futureList = new ArrayList<>();
 		ExecutorService executorService = Executors.newFixedThreadPool(threadsCount);
 		Utility.getURLsList(filePath)
-				.forEach((k, v) -> executorService.submit(
-						new DownloadThread(k.toString(), v, saveDir, speedLimit)
+				.forEach((k, v) -> futureList.add(
+						executorService.submit(
+								new DownloadThread(k, v, saveDir, speedLimit)
+						)
 				));
 		executorService.shutdown();
 
 		try {
 			executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-		} catch (InterruptedException e) {
+		} catch (InterruptedException ignored) {
 		}
 
 		System.out.println(String.format("All bytes: %s. All time: %s ms",
-				bytesQuantity,
+				futureList.stream().mapToLong(p -> {
+					long t = 0;
+					try {
+						t = p.get();
+					} catch (InterruptedException | ExecutionException e) {
+						e.printStackTrace();
+					}
+					return t;
+				}).sum(),
 				System.currentTimeMillis() - timeStart)
 		);
-
 	}
 }

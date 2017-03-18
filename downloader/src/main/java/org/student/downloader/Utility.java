@@ -21,6 +21,7 @@ public class Utility {
 	/**
 	 * The method parse the human readable format of bytes quantity and
 	 * return <code>long<code/> value
+	 *
 	 * @param numberString string which contains string representstion
 	 *                     of figure
 	 * @return {@code long} value of figure
@@ -49,6 +50,7 @@ public class Utility {
 
 	/**
 	 * Return URL list from file
+	 *
 	 * @param filePath name of file which contains URL list
 	 * @return {@code Map<URL,String>} which contains the URL of file which
 	 * need download and the name under which the file will have been saved
@@ -66,6 +68,9 @@ public class Utility {
 								e.printStackTrace();
 							}
 							return url;
-						}, s -> s.split(" ")[1]));
+						}, s -> s.split(" ")[1], (url1, url2) -> {
+							System.out.println("Duplicate key found");
+							return url1;
+						}));
 	}
 }
