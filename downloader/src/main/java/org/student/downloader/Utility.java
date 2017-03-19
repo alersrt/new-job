@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * A utilities which to use for support operations
+ * Utilities which to use for support operations
  *
  * @author jogg
  */
