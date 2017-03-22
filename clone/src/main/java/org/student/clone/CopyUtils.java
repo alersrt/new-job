@@ -1,9 +1,6 @@
 package org.student.clone;
 
 import java.io.*;
-import java.security.PublicKey;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * It is util class which provide functions of object
