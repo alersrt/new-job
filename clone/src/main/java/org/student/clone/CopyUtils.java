@@ -70,7 +70,8 @@ public class CopyUtils {
 
 				if (field.getType().isPrimitive()
 						|| field.getType().equals(String.class)
-						|| field.getType().getSuperclass().equals(Number.class)
+						|| (field.getType().getSuperclass() != null
+							&& field.getType().getSuperclass().equals(Number.class))
 						|| field.getType().equals(Boolean.class)) {
 					field.set(clone, field.get(obj));
 				} else {
